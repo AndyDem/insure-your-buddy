@@ -1,0 +1,4 @@
+Django==3.2
+pycodestyle==2.7.0
+django-bootstrap-modal-forms==2.1.0
+django-widget-tweaks==1.4.8
