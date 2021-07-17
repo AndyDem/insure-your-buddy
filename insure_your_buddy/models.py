@@ -9,8 +9,8 @@ class Customer(models.Model):
 
 
 class InsuranceService(models.Model):
-    name = models.CharField(max_length=400)
-    company = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.CharField(max_length=100)
     percentage_rate = models.IntegerField()
     term = models.IntegerField()
-    category = models.CharField(max_length=100)
+    company = models.ForeignKey(User, on_delete=models.CASCADE)
+    description = models.CharField(max_length=600)
