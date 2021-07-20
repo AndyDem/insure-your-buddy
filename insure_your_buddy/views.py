@@ -1,8 +1,15 @@
-from insure_your_buddy.forms import InsuranceServiceForm
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import InsuranceService, Customer
+from .forms import (
+    InsuranceServiceForm,
+    CustomerForm,
+    CustomUserCreationForm,
+    CustomAuthenticationForm
+)
+from .models import (
+    InsuranceService,
+    Customer
+)
 from bootstrap_modal_forms.generic import (
     BSModalLoginView,
     BSModalCreateView,
@@ -18,23 +25,34 @@ def MainView(request):
         context = {}
     return render(request, 'insure_your_buddy/main.html', context)
 
+
 def InsuranceServices():
     services = InsuranceService.objects.all()
     return services
 
 
 class CustomSignupView(BSModalCreateView):
-    form_class = UserCreationForm
-    template_name = 'insure_your_buddy/signup.html'
+    form_class = CustomUserCreationForm
+    template_name = 'insure_your_buddy/login-signup.html'
     success_message = 'Success'
     success_url = reverse_lazy('account')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_type'] = 'Sign up'
+        return context
 
 
 class CustomLoginView(BSModalLoginView):
-    form_class = AuthenticationForm
-    template_name = 'insure_your_buddy/login.html'
+    form_class = CustomAuthenticationForm
+    template_name = 'insure_your_buddy/login-signup.html'
     success_message = 'Success'
     success_url = reverse_lazy('account')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_type'] = 'Log in'
+        return context
 
 
 class CreateServiceView(BSModalCreateView):

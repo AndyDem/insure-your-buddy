@@ -1,5 +1,20 @@
 from bootstrap_modal_forms.forms import BSModalModelForm
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.forms import fields
 from .models import InsuranceService, Customer
+from bootstrap_modal_forms.mixins import PopRequestMixin, CreateUpdateAjaxMixin
+
+
+class CustomUserCreationForm(PopRequestMixin, CreateUpdateAjaxMixin, UserCreationForm):
+    class Meta:
+        model = User
+        fields = ['username']
+
+class CustomAuthenticationForm(PopRequestMixin, CreateUpdateAjaxMixin, AuthenticationForm):
+    class Meta:
+        model = User
+        fields = ['username', 'password']
 
 
 class InsuranceServiceForm (BSModalModelForm):
@@ -10,8 +25,9 @@ class InsuranceServiceForm (BSModalModelForm):
             'percentage_rate',
             'term',
             'company',
-            'description'            
+            'description'
         ]
+
 
 class CustomerForm(BSModalModelForm):
     class Meta:

@@ -1,5 +1,7 @@
 {% load static %}
 
+{% include "insure_your_buddy/modal.html" %}
+
 <header style="border-bottom: 1px solid #eee;">
   <div class="container">
     <nav class="navbar navbar-expand-md navbar-light p-0 py-2">
@@ -12,6 +14,35 @@
           </li>
         </ul>
       </div>
+      <div class="row">
+        <div class="col">
+          {% if not user.is_anonymous %}
+          <span>
+            You are logged in as
+            <strong>{{ user }}</strong>
+          </span>
+          <a href="{% url 'logout' %}" id="logout-btn" class="btn btn-danger" role="button">Log out</a>
+          <form action="{% url 'question_list' %}">
+            {% csrf_token %}
+            <button id="start" class="btn btn-primary" type="submit" name="start_button">
+              {% if continue_button %}
+              Continue
+              {% else %}
+              Start
+              {% endif %}
+            </button>
+          </form>
+          {% else %}
+          <button id="login-btn" class="btn btn-primary" type="button" name="button">Log in</button>
+          <span> or </span>
+          <button id="signup-btn" class="btn btn-primary" type="button" name="button">Sign up</button>
+          {% endif %}
+        </div>
+      </div>
     </nav>
   </div>
+
+  {% block extrascripts %}
+  {% endblock extrascripts %}
+
 </header>

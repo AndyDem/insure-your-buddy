@@ -48,7 +48,20 @@
     <script src="{% static 'assets/js/jquery.bootstrap.modal.forms.js' %}"></script>
     {% endblock scripts %}
 
-    {% block extrascripts %}{% endblock extrascripts %}
+    {% block extrascripts %}
+
+    <script type="text/javascript">
+        $(function () {
+            $("#login-btn").modalForm({
+                formURL: "{% url 'login' %}"
+            });
+
+            $("#signup-btn").modalForm({
+                formURL: "{% url 'signup' %}"
+            });
+        });
+    </script>
+    {% endblock extrascripts %}
 
 </body>
 
