@@ -22,16 +22,6 @@
             <strong>{{ user }}</strong>
           </span>
           <a href="{% url 'logout' %}" id="logout-btn" class="btn btn-danger" role="button">Log out</a>
-          <form action="{% url 'question_list' %}">
-            {% csrf_token %}
-            <button id="start" class="btn btn-primary" type="submit" name="start_button">
-              {% if continue_button %}
-              Continue
-              {% else %}
-              Start
-              {% endif %}
-            </button>
-          </form>
           {% else %}
           <button id="login-btn" class="btn btn-primary" type="button" name="button">Log in</button>
           <span> or </span>

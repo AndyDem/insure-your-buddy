@@ -5,30 +5,7 @@
 <div class="container mt-3">
     <div class="row">
         <div class="col">
-            {% if services %}
-            <table id="services-table" class="table">
-                <thead>
-                    <tr>
-                        <th class="text-center">Category</th>
-                        <th class="text-center">Percentage rate</th>
-                        <th class="text-center">Term</th>
-                        <th class="text-center">Company</th>
-                        <th class="text-center">Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for service in services %}
-                    <tr>
-                        <td class="text-center"> {{ service.category }}</td>
-                        <td class="text-center"> {{ service.percentage_rate }}</td>
-                        <td class="text-center"> {{ service.term }}</td>
-                        <td class="text-center"> {{ service.company }}</td>
-                        <td class="text-center"> {{ service.description }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% endif %}
+            {% include "insure_your_buddy/services_table.html" %}
         </div>
     </div>
 </div>

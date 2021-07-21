@@ -1,0 +1,41 @@
+{% if services %}
+<table id="services-table" class="table">
+    <thead>
+        <button id="filter" class="btn btn-primary" type="button" data-form-url="{% url 'filter' %}">
+            <span class="fa fa-filter mr-2"></span>Filter
+        </button>
+        <tr>
+            <th class="text-center">Category</th>
+            <th class="text-center">Percentage rate</th>
+            <th class="text-center">Term</th>
+            <th class="text-center">Company</th>
+            <th class="text-center">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for service in services %}
+        <tr>
+            <td class="text-center"> {{ service.category }}</td>
+            <td class="text-center"> {{ service.minimal_payment }}</td>
+            <td class="text-center"> {{ service.term }}</td>
+            <td class="text-center"> {{ service.company }}</td>
+            <td class="text-center"> {{ service.description }}</td>
+            {% if not user.is_anonymous and service.company == user.username %}
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-primary"
+                    data-form-url="{% url 'update_service' service.pk %}">
+                    <span class="fa fa-pencil"></span>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger"
+                    data-form-url="{% url 'delete_service' service.pk %}">
+                    <span class="fa fa-trash"></span>
+                </button>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<h4>Unfortunately, no services available</h4>
+{% endif %}

@@ -1,6 +1,7 @@
-from bootstrap_modal_forms.forms import BSModalModelForm
+from django import forms
+from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField
 from django.forms import fields
 from .models import InsuranceService, Customer
 from bootstrap_modal_forms.mixins import PopRequestMixin, CreateUpdateAjaxMixin
@@ -10,6 +11,7 @@ class CustomUserCreationForm(PopRequestMixin, CreateUpdateAjaxMixin, UserCreatio
     class Meta:
         model = User
         fields = ['username']
+
 
 class CustomAuthenticationForm(PopRequestMixin, CreateUpdateAjaxMixin, AuthenticationForm):
     class Meta:
@@ -22,7 +24,7 @@ class InsuranceServiceForm (BSModalModelForm):
         model = InsuranceService
         fields = [
             'category',
-            'percentage_rate',
+            'minimal_payment',
             'term',
             'company',
             'description'
@@ -37,3 +39,7 @@ class CustomerForm(BSModalModelForm):
             'phone_number',
             'email'
         ]
+
+
+class ServiceFilterForm(BSModalForm):
+    category = forms.ChoiceField(choices=InsuranceService.CATEGORIES)
