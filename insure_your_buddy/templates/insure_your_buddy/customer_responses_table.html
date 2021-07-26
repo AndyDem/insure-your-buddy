@@ -1,0 +1,18 @@
+<table id="services-table" class="table">
+    <thead>
+        <tr>
+            <th class="text-center">Name</th>
+            <th class="text-center">Phone number</th>
+            <th class="text-center">Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customers %}
+        <tr>
+            <td class="text-center"> {{ customer.full_name }}</td>
+            <td class="text-center"> {{ customer.phone_number }}</td>
+            <td class="text-center"> {{ customer.email }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

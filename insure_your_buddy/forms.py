@@ -26,20 +26,21 @@ class InsuranceServiceForm (BSModalModelForm):
             'category',
             'minimal_payment',
             'term',
-            'company',
             'description'
         ]
 
 
-class CustomerForm(BSModalModelForm):
+class CustomerResponseForm(BSModalModelForm):
     class Meta:
         model = Customer
         fields = [
-            'name',
+            'full_name',
             'phone_number',
             'email'
         ]
 
 
 class ServiceFilterForm(BSModalForm):
-    category = forms.ChoiceField(choices=InsuranceService.CATEGORIES)
+    NO_FILTER = 0
+    choices = ((NO_FILTER, 'All'),) + InsuranceService.CATEGORIES
+    category = forms.ChoiceField(choices=choices)

@@ -20,11 +20,12 @@ class InsuranceService(models.Model):
     minimal_payment = models.IntegerField()
     term = models.IntegerField()
     company = models.ForeignKey(User, on_delete=models.CASCADE)
-    description = models.CharField(max_length=600)
+    description = models.TextField()
+    customers_count = models.IntegerField(default=0)
 
 
 class Customer(models.Model):
-    name = models.CharField(max_length=200)
+    full_name = models.CharField(max_length=300)
     phone_number = models.CharField(max_length=20)
     email = models.EmailField()
     desired_service = models.ManyToManyField(InsuranceService)

@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+{% include "insure_your_buddy/modal.html" %}
+
+<div class="container mt-3">
+    <div class="row mb-3">
+        <button id="create-service" class="btn btn-primary mr-2" type="button" name="button">
+            <span class="fa fa-plus mr-2"></span>Create service
+        </button>
+        <button id="filter" class="btn btn-primary mr-2" type="button" data-form-url="{% url 'filter' %}">
+            <span class="fa fa-filter mr-2"></span>Filter
+        </button>
+    </div>
+    <div class="row">
+      {% include "insure_your_buddy/services_table.html" %}
+    </div>
+</div>
+
+
+{% endblock body %}

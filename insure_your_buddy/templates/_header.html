@@ -21,6 +21,7 @@
             You are logged in as
             <strong>{{ user }}</strong>
           </span>
+          <a href="{% url 'profile' %}" id="profile-btn" class="btn btn-primary" role="button">Profile</a>
           <a href="{% url 'logout' %}" id="logout-btn" class="btn btn-danger" role="button">Log out</a>
           {% else %}
           <button id="login-btn" class="btn btn-primary" type="button" name="button">Log in</button>

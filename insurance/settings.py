@@ -133,5 +133,5 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/insure_your_buddy/login/'
-LOGIN_REDIRECT_URL = 'main'
+LOGIN_REDIRECT_URL = 'profile'
 LOGOUT_REDIRECT_URL = 'main'

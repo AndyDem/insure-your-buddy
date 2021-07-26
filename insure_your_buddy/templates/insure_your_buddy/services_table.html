@@ -1,36 +1,50 @@
 {% if services %}
 <table id="services-table" class="table">
     <thead>
-        <button id="filter" class="btn btn-primary" type="button" data-form-url="{% url 'filter' %}">
-            <span class="fa fa-filter mr-2"></span>Filter
-        </button>
         <tr>
             <th class="text-center">Category</th>
-            <th class="text-center">Percentage rate</th>
-            <th class="text-center">Term</th>
+            <th class="text-center">Minimal payment($)</th>
+            <th class="text-center">Term(months)</th>
             <th class="text-center">Company</th>
             <th class="text-center">Description</th>
+            {% if user.is_anonymous %}
+            <th class="text-center">Submit your application</th>
+            {% elif request.path == '/insure-your-buddy/profile/' %}
+            <th class="text-center">Delete service</th>
+            <th class="text-center">Customer responses</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
         {% for service in services %}
         <tr>
-            <td class="text-center"> {{ service.category }}</td>
+            <td class="text-center"> {{ service.get_category_display }}</td>
             <td class="text-center"> {{ service.minimal_payment }}</td>
             <td class="text-center"> {{ service.term }}</td>
-            <td class="text-center"> {{ service.company }}</td>
+            <td class="text-center"> {{ service.company.username }}</td>
             <td class="text-center"> {{ service.description }}</td>
-            {% if not user.is_anonymous and service.company == user.username %}
+            {% if user.is_anonymous %}
             <td class="text-center">
-                <button type="button" class="btn btn-sm btn-primary"
-                    data-form-url="{% url 'update_service' service.pk %}">
-                    <span class="fa fa-pencil"></span>
+                <button type="button" class="response btn btn-sm btn-primary"
+                    data-form-url="{% url 'response' service.id %}">
+                    <span class="fa fa-file-text-o"></span>
                 </button>
-                <button type="button" class="btn btn-sm btn-danger"
+            </td>
+            {% elif user.username == service.company.username and request.path == '/insure-your-buddy/profile/' %}
+            <td class="text-center">
+                <button type="button" class="delete-service btn btn-sm btn-danger"
                     data-form-url="{% url 'delete_service' service.pk %}">
                     <span class="fa fa-trash"></span>
                 </button>
             </td>
+            <td class="text-center">
+                <p>{{ service.customers_count }} responses</p>
+                <a type="button" class="show-responses btn btn-sm btn-primary"
+                    href="{% url 'show_responses' service.pk %}">
+                    <span class="fa fa-search mr-2"></span>Show
+                </a>
+            </td>
+
             {% endif %}
         </tr>
         {% endfor %}
@@ -39,3 +53,6 @@
 {% else %}
 <h4>Unfortunately, no services available</h4>
 {% endif %}
+
+{% block extrascripts %}
+{% endblock extrascripts %}

@@ -49,7 +49,6 @@
     {% endblock scripts %}
 
     {% block extrascripts %}
-
     <script type="text/javascript">
         $(function () {
             $("#login-btn").modalForm({
@@ -58,6 +57,58 @@
 
             $("#signup-btn").modalForm({
                 formURL: "{% url 'signup' %}"
+            });
+
+            $("#filter").each(function () {
+                $(this).modalForm({
+                    formURL: $(this).data("form-url")
+                });
+            });
+
+            function responseModalForm() {
+                $(".response").each(function () {
+                    $(this).modalForm({
+                        formURL: $(this).data("form-url")
+                    });
+                });
+            };
+            responseModalForm();
+
+            function createServiceModalForm() {
+                $("#create-service").modalForm({
+                    formURL: "{% url 'create_service' %}"
+                });
+            };
+            createServiceModalForm();
+
+            function updateServiceModalForm() {
+                $(".update-service").each(function () {
+                    $(this).modalForm({
+                        formURL: $(this).data("form-url")
+                    });
+                });
+            };
+            updateServiceModalForm();
+
+            function deleteServiceModalForm() {
+                $(".delete-service").each(function () {
+                    $(this).modalForm({
+                        formURL: $(this).data("form-url"),
+                        isDeleteForm: true
+                    });
+                });
+            };
+            deleteServiceModalForm();
+
+            function reinstantiateModalForms() {
+                createServiceModalForm();
+                updateServiceModalForm();
+                deleteServiceModalForm();
+                responseModalForm();
+            };
+
+            $(".alert").fadeTo(2000, 500).slideUp(500, function () {
+                $(".alert").slideUp(500);
             });
         });
     </script>
