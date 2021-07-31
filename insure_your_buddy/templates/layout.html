@@ -52,11 +52,11 @@
     <script type="text/javascript">
         $(function () {
             $("#login-btn").modalForm({
-                formURL: "{% url 'login' %}"
+                formURL: "{% url 'users:login' %}"
             });
 
             $("#signup-btn").modalForm({
-                formURL: "{% url 'signup' %}"
+                formURL: "{% url 'users:signup' %}"
             });
 
             $("#filter").each(function () {
@@ -76,7 +76,7 @@
 
             function createServiceModalForm() {
                 $("#create-service").modalForm({
-                    formURL: "{% url 'create_service' %}"
+                    formURL: "{% url 'insure_your_buddy:create_service' %}"
                 });
             };
             createServiceModalForm();

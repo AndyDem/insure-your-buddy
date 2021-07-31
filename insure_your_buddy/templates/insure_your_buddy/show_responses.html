@@ -4,9 +4,11 @@
 
 <div class="container mt-3">
     <div class="row">
-        {% include "insure_your_buddy/services_table.html" %}
-        
-        {% include "insure_your_buddy/customer_responses_table.html" %}
+        <div class="col">
+            <h4>{{ title }}</h4>
+            <caption>List of customers</caption>
+            {% include "insure_your_buddy/customer_responses_table.html" %}
+        </div>
     </div>
 </div>
 

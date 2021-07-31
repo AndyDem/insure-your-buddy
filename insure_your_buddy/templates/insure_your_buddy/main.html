@@ -5,7 +5,8 @@
 <div class="container mt-3">
     <div class="row">
         <div class="col">
-            <button id="filter" class="btn btn-primary mb-3" type="button" data-form-url="{% url 'filter' %}">
+            <button id="filter" class="btn btn-primary mb-3" type="button"
+                data-form-url="{% url 'insure_your_buddy:filter' %}">
                 <span class="fa fa-filter mr-2"></span>Filter
             </button>
             {% include "insure_your_buddy/services_table.html" %}

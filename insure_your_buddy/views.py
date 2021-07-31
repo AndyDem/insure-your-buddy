@@ -1,12 +1,14 @@
+from django.core import paginator
 from django.http import request
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.contrib.auth.models import User
+from .services import create_response, create_service
+from .tasks import send_customer_data
+from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator
 from .forms import (
     InsuranceServiceForm,
     CustomerResponseForm,
-    CustomUserCreationForm,
-    CustomAuthenticationForm,
     ServiceFilterForm
 )
 from .models import (
@@ -14,7 +16,6 @@ from .models import (
     Customer
 )
 from bootstrap_modal_forms.generic import (
-    BSModalLoginView,
     BSModalCreateView,
     BSModalUpdateView,
     BSModalDeleteView,
@@ -35,9 +36,16 @@ def main_view(request):
         if int(request.session['filter']) == 0:
             services = services
         else:
-            services = services.filter(category=int(request.session['filter']))
+            services = services.filter(category=int(
+                request.session['filter']))
 
-    context = {'services': services}
+    paginator = Paginator(services, 5)
+    page_number = request.GET.get('p')
+    services = paginator.get_page(page_number)
+
+    context = {
+        'services': services
+    }
 
     return render(request, 'insure_your_buddy/main.html', context)
 
@@ -45,21 +53,25 @@ def main_view(request):
 def profile_view(request):
     """
 
-    View личного кабинета с фильтруемыми страховыми услугами конкретной компании
+    View личного кабинета с фильтруемыми
+    страховыми услугами конкретной компании
 
     """
 
-    if '_auth_user_id' not in request.session:
-        return redirect('main')
+    if request.user.is_anonymous:
+        return redirect('insure_your_buddy:main')
 
-    company = User.objects.get(pk=int(request.session['_auth_user_id']))
-    services = InsuranceService.objects.filter(company=company)
+    services = InsuranceService.objects.filter(company=request.user.id)
 
     if 'filter' in request.session:
         if int(request.session['filter']) == 0:
             services = services
         else:
             services = services.filter(category=int(request.session['filter']))
+
+    paginator = Paginator(services, 5)
+    page_number = request.GET.get('p')
+    services = paginator.get_page(page_number)
 
     context = {
         'services': services
@@ -74,10 +86,14 @@ def show_responses_view(request, service_id):
 
     """
 
-    services = InsuranceService.objects.filter(pk=service_id)
+    service = InsuranceService.objects.get(pk=service_id)
+    term = 'months' if service.term > 1 else 'month'
+    title = f'{ service.get_category_display() } insurance\
+         with minimal payment of { service.minimal_payment }$ \
+             for { service.term } {term}.'
     customers = Customer.objects.filter(desired_service__id=service_id)
     context = {
-        'services': services,
+        'title': title,
         'customers': customers
     }
     return render(request, 'insure_your_buddy/show_responses.html', context)
@@ -105,77 +121,29 @@ class FilterServiceView(BSModalFormView):
 class CustomerResponseView(BSModalCreateView):
     """
 
-    View создания отклика(заявки)
+    View создания отклика(заявки) и отправки на почту компании
 
     """
 
     form_class = CustomerResponseForm
     template_name = 'insure_your_buddy/response.html'
     success_message = 'Success'
-    success_url = reverse_lazy('main')
+    success_url = reverse_lazy('insure_your_buddy:main')
 
     def form_valid(self, form):
         if not self.request.is_ajax():
             customer_data = form.cleaned_data
-            if Customer.objects.filter(
-                full_name=customer_data['full_name'],
-                phone_number=customer_data['phone_number'],
-                email=customer_data['email']
-            ):
-                Customer.objects.get(
-                    full_name=customer_data['full_name'],
-                    phone_number=customer_data['phone_number'],
-                    email=customer_data['email']
-                ).desired_service.add(self.kwargs['service_id'])
-            else:
-                Customer.objects.create(
-                    full_name=customer_data['full_name'],
-                    phone_number=customer_data['phone_number'],
-                    email=customer_data['email']
-                ).desired_service.add(self.kwargs['service_id'])
-            service = InsuranceService.objects.get(
-                pk=self.kwargs['service_id'])
-            service.customers_count += 1
-            service.save()
-            return redirect('main')
+            create_response(customer_data, self.kwargs['service_id'])
+            company_mail = InsuranceService.objects.get(
+                pk=self.kwargs['service_id']).company.email
+            send_customer_data.delay(
+                cusromer_data=customer_data,
+                service_id=self.kwargs['service_id'],
+                to_mail=company_mail
+            )
+            return redirect(self.success_url)
         else:
-            return redirect('main')
-
-
-class CustomSignupView(BSModalCreateView):
-    """
-
-    View регистрации пользователя
-
-    """
-
-    form_class = CustomUserCreationForm
-    template_name = 'insure_your_buddy/login-signup.html'
-    success_message = 'Success'
-    success_url = reverse_lazy('profile')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_type'] = 'Sign up'
-        return context
-
-
-class CustomLoginView(BSModalLoginView):
-    """
-
-    View аутентификации
-
-    """
-
-    form_class = CustomAuthenticationForm
-    template_name = 'insure_your_buddy/login-signup.html'
-    success_message = 'Success'
-    success_url = reverse_lazy('profile')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_type'] = 'Log in'
-        return context
+            return super().form_invalid(form)
 
 
 class CreateServiceView(BSModalCreateView):
@@ -188,37 +156,31 @@ class CreateServiceView(BSModalCreateView):
     form_class = InsuranceServiceForm
     template_name = 'insure_your_buddy/create_service.html'
     success_message = 'Success'
-    success_url = reverse_lazy('profile')
+    success_url = reverse_lazy('insure_your_buddy:profile')
 
     def form_valid(self, form):
         if not self.request.is_ajax():
-            user_id = int(self.request.session['_auth_user_id'])
-            company = User.objects.get(pk=user_id)
-            InsuranceService.objects.create(
-                category=form.cleaned_data['category'],
-                minimal_payment=form.cleaned_data['minimal_payment'],
-                term=form.cleaned_data['term'],
-                company=company,
-                description=form.cleaned_data['description']
-            )
-            return redirect('profile')
+            service_data = form.cleaned_data
+            user_id = self.request.user.id
+            create_service(service_data, user_id)
+            return redirect(self.success_url)
         else:
-            return redirect('profile')
+            return super().form_invalid(form)
 
 
-# class UpdateServiceView(BSModalUpdateView):
-#     """
+class UpdateServiceView(BSModalUpdateView):
+    """
 
-#     View для изменения страховой услуги
-#     Временно отключен
+    View для изменения страховой услуги
+    Временно отключен
 
-#     """
+    """
 
-#     model = InsuranceService
-#     form_class = InsuranceServiceForm
-#     template_name = 'insure_your_buddy/update_service.html'
-#     success_message = 'Success'
-#     success_url = reverse_lazy('profile')
+    model = InsuranceService
+    form_class = InsuranceServiceForm
+    template_name = 'insure_your_buddy/update_service.html'
+    success_message = 'Success'
+    success_url = reverse_lazy('profile')
 
 
 class DeleteServiceView(BSModalDeleteView):
@@ -231,4 +193,4 @@ class DeleteServiceView(BSModalDeleteView):
     model = InsuranceService
     template_name = 'insure_your_buddy/delete_service.html'
     success_message = 'Success'
-    success_url = reverse_lazy('profile')
+    success_url = reverse_lazy('insure_your_buddy:profile')

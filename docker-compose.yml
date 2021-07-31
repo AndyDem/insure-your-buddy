@@ -8,3 +8,10 @@ services:
       - .:/code
     ports:
       - "8000:8000"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: some-rabbit
+    ports: 
+      - 5762:5762
+      - 15672:15672
