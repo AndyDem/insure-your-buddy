@@ -1,18 +1,32 @@
-<table id="services-table" class="table">
-    <thead>
-        <tr>
-            <th class="text-center">Name</th>
-            <th class="text-center">Phone number</th>
-            <th class="text-center">Email</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for customer in customers %}
-        <tr>
-            <td class="text-center"> {{ customer.full_name }}</td>
-            <td class="text-center"> {{ customer.phone_number }}</td>
-            <td class="text-center"> {{ customer.email }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="col">
+    <table id="services-table" class="table">
+        <thead>
+            <tr>
+                <th class="text-center">Name</th>
+                <th class="text-center">Phone number</th>
+                <th class="text-center">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td class="text-center"> {{ customer.full_name }}</td>
+                <td class="text-center"> {{ customer.phone_number }}</td>
+                <td class="text-center"> {{ customer.email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if customers.has_previous %}
+    <a class="btn btn-primary" href="?p={{ customers.previous_page_number }}">previous</a>
+    {% endif %}
+
+    <span class="current">
+        Page {{ customers.number }} of {{ customers.paginator.num_pages }}.
+    </span>
+
+    {% if customers.has_next %}
+    <a class="btn btn-primary" href="?p={{ customers.next_page_number }}">next</a>
+    {% endif %}
+</div>

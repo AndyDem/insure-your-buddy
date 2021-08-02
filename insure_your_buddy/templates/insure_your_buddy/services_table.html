@@ -3,16 +3,16 @@
     <table id="services-table" class="table">
         <thead>
             <tr>
-                <th class="text-center">Category</th>
-                <th class="text-center">Minimal payment($)</th>
-                <th class="text-center">Term(months)</th>
-                <th class="text-center">Company</th>
+                <th class="text-center"><a style="color: black;" href="?sort_by=category">Category</a></th>
+                <th class="text-center"><a style="color: black;" href="?sort_by=minimal_payment">Minimal payment($)</a></th>
+                <th class="text-center"><a style="color: black;" href="?sort_by=term">Term(months)</a></th>
+                <th class="text-center"><a style="color: black;" href="?sort_by=company">Company</a></th>
                 <th class="text-center">Description</th>
                 {% if user.is_anonymous %}
                 <th class="text-center">Submit your application</th>
                 {% elif request.path == '/insure-your-buddy/profile/' %}
-                <th class="text-center">Delete service</th>
-                <th class="text-center">Customer responses</th>
+                <th class="text-center">Update/Delete service</th>
+                <th class="text-center"><a style="color: black;" href="?sort_by=-customers_count">Customer responses</a></th>
                 {% endif %}
             </tr>
         </thead>
@@ -70,7 +70,6 @@
     {% if services.has_next %}
     <a class="btn btn-primary" href="?p={{ services.next_page_number }}">next</a>
     {% endif %}
-</div>
 </div>
 
 {% block extrascripts %}

@@ -1,11 +1,15 @@
-from django.core import paginator
-from django.http import request
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from .services import create_response, create_service
+from .services import (
+    create_response,
+    create_service,
+    get_filtered_services,
+    get_paginated_objects,
+    get_service_title,
+    get_sorted_services,
+    filters_to_session
+)
 from .tasks import send_customer_data
-from django.contrib.auth import get_user_model
-from django.core.paginator import Paginator
 from .forms import (
     InsuranceServiceForm,
     CustomerResponseForm,
@@ -29,23 +33,11 @@ def main_view(request):
     View для отображения главной страницы с фильтруемыми страховыми услугами
 
     """
+    services = get_sorted_services(request)
+    services = get_filtered_services(request, services)
+    services = get_paginated_objects(request, services)
 
-    services = InsuranceService.objects.all()
-
-    if 'filter' in request.session:
-        if int(request.session['filter']) == 0:
-            services = services
-        else:
-            services = services.filter(category=int(
-                request.session['filter']))
-
-    paginator = Paginator(services, 5)
-    page_number = request.GET.get('p')
-    services = paginator.get_page(page_number)
-
-    context = {
-        'services': services
-    }
+    context = {'services': services}
 
     return render(request, 'insure_your_buddy/main.html', context)
 
@@ -57,25 +49,15 @@ def profile_view(request):
     страховыми услугами конкретной компании
 
     """
-
     if request.user.is_anonymous:
         return redirect('insure_your_buddy:main')
 
-    services = InsuranceService.objects.filter(company=request.user.id)
+    services = get_sorted_services(request, company=request.user.id)
+    services = get_filtered_services(request, services)
+    services = get_paginated_objects(request, services)
 
-    if 'filter' in request.session:
-        if int(request.session['filter']) == 0:
-            services = services
-        else:
-            services = services.filter(category=int(request.session['filter']))
+    context = {'services': services}
 
-    paginator = Paginator(services, 5)
-    page_number = request.GET.get('p')
-    services = paginator.get_page(page_number)
-
-    context = {
-        'services': services
-    }
     return render(request, 'insure_your_buddy/profile.html', context)
 
 
@@ -85,17 +67,15 @@ def show_responses_view(request, service_id):
     View для отображения откликов(заявок) на конкретную услугу
 
     """
-
-    service = InsuranceService.objects.get(pk=service_id)
-    term = 'months' if service.term > 1 else 'month'
-    title = f'{ service.get_category_display() } insurance\
-         with minimal payment of { service.minimal_payment }$ \
-             for { service.term } {term}.'
     customers = Customer.objects.filter(desired_service__id=service_id)
+    customers = customers.order_by('-id')
+    customers = get_paginated_objects(request, customers)
+
     context = {
-        'title': title,
+        'title': get_service_title(service_id),
         'customers': customers
     }
+
     return render(request, 'insure_your_buddy/show_responses.html', context)
 
 
@@ -110,8 +90,7 @@ class FilterServiceView(BSModalFormView):
     template_name = 'insure_your_buddy/filter.html'
 
     def form_valid(self, form):
-        self.request.session['filter'] = form.cleaned_data['category']
-        print(self.request.META.get('HTTP_REFERER'))
+        filters_to_session(self.request, form)
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -134,16 +113,11 @@ class CustomerResponseView(BSModalCreateView):
         if not self.request.is_ajax():
             customer_data = form.cleaned_data
             create_response(customer_data, self.kwargs['service_id'])
-            company_mail = InsuranceService.objects.get(
-                pk=self.kwargs['service_id']).company.email
             send_customer_data.delay(
-                cusromer_data=customer_data,
-                service_id=self.kwargs['service_id'],
-                to_mail=company_mail
+                customer_data=customer_data,
+                service_id=self.kwargs['service_id']
             )
             return redirect(self.success_url)
-        else:
-            return super().form_invalid(form)
 
 
 class CreateServiceView(BSModalCreateView):
@@ -164,8 +138,6 @@ class CreateServiceView(BSModalCreateView):
             user_id = self.request.user.id
             create_service(service_data, user_id)
             return redirect(self.success_url)
-        else:
-            return super().form_invalid(form)
 
 
 class UpdateServiceView(BSModalUpdateView):
