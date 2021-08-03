@@ -13,5 +13,11 @@ services:
     image: rabbitmq:3-management
     hostname: some-rabbit
     ports: 
-      - 5762:5762
-      - 15672:15672
+      - "5762:5762"
+      - "15672:15672"
+
+  elasticsearch:
+    image: elasticsearch:7.13.4
+    hostname: elasticsearch
+    ports:
+      - "9200:9200"
