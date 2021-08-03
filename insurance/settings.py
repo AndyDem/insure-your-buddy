@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'insure_your_buddy',
     'users',
     'widget_tweaks',
-    'bootstrap_modal_forms'
-
+    'bootstrap_modal_forms',
+    'django_elasticsearch_dsl'
 ]
 
 MIDDLEWARE = [
@@ -141,4 +141,9 @@ CELERY_BROKER_URL = 'amqp://localhost'
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = "Your SendGrid API Key"
 # Toggle sandbox mode (when running in DEBUG mode)
-SENDGRID_SANDBOX_MODE_IN_DEBUG=True
+SENDGRID_SANDBOX_MODE_IN_DEBUG = True
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'localhost:9200'
+    },
+}

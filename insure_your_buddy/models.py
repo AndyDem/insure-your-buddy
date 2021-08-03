@@ -29,6 +29,18 @@ class InsuranceService(models.Model):
     customers_count = models.PositiveIntegerField(default=0)
 
 
+    def get_service_title(self):
+        """
+
+        Функция получения названия услуги
+
+        """
+        term = 'months' if self.term > 1 else 'month'
+        title = f'{ self.get_category_display() } insurance\
+            with minimal payment of { self.minimal_payment }$ \
+                for { self.term } {term}.'
+        return title
+
 class Customer(models.Model):
     """
     

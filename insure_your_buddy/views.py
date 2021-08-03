@@ -1,3 +1,4 @@
+from insure_your_buddy.documents import InsuranceServiceDocument
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from .services import (
@@ -5,7 +6,6 @@ from .services import (
     create_service,
     get_filtered_services,
     get_paginated_objects,
-    get_service_title,
     get_sorted_services,
     filters_to_session
 )
@@ -36,6 +36,15 @@ def main_view(request):
     services = get_sorted_services(request)
     services = get_filtered_services(request, services)
     services = get_paginated_objects(request, services)
+
+    s = InsuranceServiceDocument.search()
+    s = s.filter('term', company='insurance-company 2')
+    s = s.to_queryset()
+    for hit in s:
+        print(
+            f"{type(hit)}{hit}"
+        )
+    
 
     context = {'services': services}
 
@@ -70,9 +79,11 @@ def show_responses_view(request, service_id):
     customers = Customer.objects.filter(desired_service__id=service_id)
     customers = customers.order_by('-id')
     customers = get_paginated_objects(request, customers)
+    
+    title = InsuranceService.objects.get(pk=service_id).get_service_title()
 
     context = {
-        'title': get_service_title(service_id),
+        'title': title,
         'customers': customers
     }
 
@@ -88,6 +99,14 @@ class FilterServiceView(BSModalFormView):
 
     form_class = ServiceFilterForm
     template_name = 'insure_your_buddy/filter.html'
+
+    def get_form(self):
+        if self.request.META.get('HTTP_REFERER').endswith('profile/'):
+            form = ServiceFilterForm(**self.get_form_kwargs())
+            form.fields.pop('company')
+            return form
+        else:
+            return super().get_form()
 
     def form_valid(self, form):
         filters_to_session(self.request, form)

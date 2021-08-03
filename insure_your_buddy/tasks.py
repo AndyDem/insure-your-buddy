@@ -1,5 +1,4 @@
 from .models import InsuranceService
-from .services import get_service_title
 from celery import shared_task
 from django.core.mail import send_mail
 
@@ -12,8 +11,9 @@ def send_customer_data(customer_data, service_id):
     в страховую компанию
 
     """
-    title = get_service_title(service_id)
-    company_mail = InsuranceService.objects.get(pk=service_id).company.email
+    service = InsuranceService.objects.get(pk=service_id)
+    title = service.get_service_title()
+    company_mail = service.company.email
     return send_mail(
         subject='New customer response',
         message=f'You have new customer on "{title}"!\n\

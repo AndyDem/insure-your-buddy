@@ -5,3 +5,4 @@ django-widget-tweaks==1.4.8
 Celery==5.1.2
 psycopg2==2.9.1
 django-sendgrid-v5==0.9.1
+django-elasticsearch-dsl==7.2.0

@@ -40,20 +40,6 @@ def create_service(service_data, user_id):
     )
 
 
-def get_service_title(service_id):
-    """
-
-    Функция получения названия услуги
-
-    """
-    service = InsuranceService.objects.get(pk=service_id)
-    term = 'months' if service.term > 1 else 'month'
-    title = f'{ service.get_category_display() } insurance\
-         with minimal payment of { service.minimal_payment }$ \
-             for { service.term } {term}.'
-    return title
-
-
 def get_sorted_services(request, **kwargs):
     """
 
