@@ -18,6 +18,8 @@ services:
 
   elasticsearch:
     image: elasticsearch:7.13.4
+    environment:
+      - discovery.type=single-node
     hostname: elasticsearch
     ports:
       - "9200:9200"

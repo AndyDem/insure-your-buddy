@@ -62,3 +62,7 @@ class ServiceFilterForm(BSModalForm):
     minimal_payment = forms.ChoiceField(choices=MINIMAL_PAYMENTS)
     term = forms.ChoiceField(choices=TERMS)
     company = forms.ChoiceField(choices=COMPANIES)
+
+
+class SearchForm(BSModalForm):
+    search = forms.CharField()

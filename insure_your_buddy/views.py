@@ -7,13 +7,15 @@ from .services import (
     get_filtered_services,
     get_paginated_objects,
     get_sorted_services,
-    filters_to_session
+    filters_to_session,
+    search_service
 )
 from .tasks import send_customer_data
 from .forms import (
     InsuranceServiceForm,
     CustomerResponseForm,
-    ServiceFilterForm
+    ServiceFilterForm,
+    SearchForm
 )
 from .models import (
     InsuranceService,
@@ -35,18 +37,26 @@ def main_view(request):
     """
     services = get_sorted_services(request)
     services = get_filtered_services(request, services)
-    services = get_paginated_objects(request, services)
 
     s = InsuranceServiceDocument.search()
-    s = s.filter('term', company='insurance-company 2')
+    s = s.filter('match_phrase', service_title='insurance-company 2')
     s = s.to_queryset()
     for hit in s:
         print(
             f"{type(hit)}{hit}"
         )
-    
 
-    context = {'services': services}
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        if form.is_valid():
+            services = search_service(form)
+
+    services = get_paginated_objects(request, services)
+
+    context = {
+        'services': services,
+        'form': SearchForm()
+    }
 
     return render(request, 'insure_your_buddy/main.html', context)
 
@@ -79,9 +89,10 @@ def show_responses_view(request, service_id):
     customers = Customer.objects.filter(desired_service__id=service_id)
     customers = customers.order_by('-id')
     customers = get_paginated_objects(request, customers)
-    
-    title = InsuranceService.objects.get(pk=service_id).get_service_title()
 
+    title, company = InsuranceService.objects.get(
+        pk=service_id).get_service_title()
+    print(company)
     context = {
         'title': title,
         'customers': customers
@@ -136,7 +147,7 @@ class CustomerResponseView(BSModalCreateView):
                 customer_data=customer_data,
                 service_id=self.kwargs['service_id']
             )
-            return redirect(self.success_url)
+        return redirect(self.success_url)
 
 
 class CreateServiceView(BSModalCreateView):
@@ -156,7 +167,7 @@ class CreateServiceView(BSModalCreateView):
             service_data = form.cleaned_data
             user_id = self.request.user.id
             create_service(service_data, user_id)
-            return redirect(self.success_url)
+        return redirect(self.success_url)
 
 
 class UpdateServiceView(BSModalUpdateView):
@@ -171,7 +182,7 @@ class UpdateServiceView(BSModalUpdateView):
     form_class = InsuranceServiceForm
     template_name = 'insure_your_buddy/update_service.html'
     success_message = 'Success'
-    success_url = reverse_lazy('profile')
+    success_url = reverse_lazy('insure_your_buddy:profile')
 
 
 class DeleteServiceView(BSModalDeleteView):

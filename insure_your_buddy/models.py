@@ -9,13 +9,13 @@ class InsuranceService(models.Model):
     
     """
     VEHICLE = 1
-    HOME_INSURANCE = 2
+    HOME = 2
     LIFE = 3
     PROPERTY = 4
     COMBO = 5
     CATEGORIES = (
         (VEHICLE, 'Vehicle'),
-        (HOME_INSURANCE, 'Home insurance'),
+        (HOME, 'Home'),
         (LIFE, 'Life'),
         (PROPERTY, 'Property'),
         (COMBO, 'Combo')
@@ -39,7 +39,8 @@ class InsuranceService(models.Model):
         title = f'{ self.get_category_display() } insurance\
             with minimal payment of { self.minimal_payment }$ \
                 for { self.term } {term}.'
-        return title
+        company_name = self.company.company_name
+        return title, company_name
 
 class Customer(models.Model):
     """

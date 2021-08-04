@@ -1,6 +1,7 @@
 from .models import InsuranceService, Customer
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
+from insure_your_buddy.documents import InsuranceServiceDocument
 
 
 def create_response(customer_data, service_id):
@@ -151,3 +152,14 @@ def get_paginated_objects(request, objects):
     page_number = request.GET.get('p')
     objects = paginator.get_page(page_number)
     return objects
+
+def search_service(form):
+    """
+    
+    Функция поиска
+    
+    """
+    search = InsuranceServiceDocument.search()
+    search_data = form.cleaned_data
+    search_result = search.filter('match_phrase', service_title=search_data['search'])
+    return search_result.to_queryset()
