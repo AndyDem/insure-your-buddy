@@ -1,13 +1,31 @@
 version: "3.8"
-   
+
+volumes:
+  postgres_data:
+
 services:
   web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    build: ./
+    command: python manage.py migrate && python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
     ports:
       - "8000:8000"
+    image: web-image
+    depends_on: 
+      - db
+      - rabbitmq
+
+  db:
+    image: postgres:10.17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=iyb_user
+      - POSTGRES_PASSWORD=iyb_pass
+      - POSTGRES_DB=insure_your_buddy
+    ports:
+      - "5432:5432"
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -15,6 +33,15 @@ services:
     ports: 
       - "5762:5762"
       - "15672:15672"
+    restart: on-failure
+
+  celery_worker:
+    command: celery -A insurance worker -l  info -P solo
+    depends_on: 
+      - web
+      - db
+      - rabbitmq
+    image: web-image
 
   elasticsearch:
     image: elasticsearch:7.13.4
@@ -23,3 +50,4 @@ services:
     hostname: elasticsearch
     ports:
       - "9200:9200"
+  
