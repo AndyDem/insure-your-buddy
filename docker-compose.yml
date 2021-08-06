@@ -3,9 +3,10 @@ version: "3.7"
 services:
   web:
     build: ./
-    command: python manage.py runserver
+    # command: >
+    #   sh -c "python manage.py migrate"
     volumes:
-      - ./app/:/usr/src/app/
+      - ./:/usr/src/app/
     ports:
       - "8000:8000"
     image: web-image
@@ -13,7 +14,7 @@ services:
       - ./.env.dev
     depends_on: 
       - db
-      - rabbitmq
+      # - rabbitmq
 
   db:
     image: postgres:10.17-alpine
@@ -26,29 +27,29 @@ services:
     ports:
       - "5432:5432"
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    hostname: some-rabbit
-    ports: 
-      - "5762:5762"
-      - "15672:15672"
-    restart: on-failure
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   hostname: some-rabbit
+  #   ports: 
+  #     - "5762:5762"
+  #     - "15672:15672"
+  #   restart: on-failure
 
-  celery_worker:
-    command: celery -A insurance worker -l  info -P solo
-    depends_on: 
-      - web
-      - db
-      - rabbitmq
-    image: web-image
+  # celery_worker:
+  #   command: celery -A insurance worker -l  info -P solo
+  #   depends_on: 
+  #     - web
+  #     - db
+  #     - rabbitmq
+  #   image: web-image
 
-  elasticsearch:
-    image: elasticsearch:7.13.4
-    environment:
-      - discovery.type=single-node
-    hostname: elasticsearch
-    ports:
-      - "9200:9200"
+  # elasticsearch:
+  #   image: elasticsearch:7.13.4
+  #   environment:
+  #     - discovery.type=single-node
+  #   hostname: elasticsearch
+  #   ports:
+  #     - "9200:9200"
   
 volumes:
   postgres_data:
