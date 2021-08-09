@@ -4,7 +4,7 @@ from . import views
 
 app_name = 'insure_your_buddy'
 urlpatterns = [
-    path('main', views.main_view, name='main'),
+    path('main/', views.main_view, name='main'),
     path('profile/', views.profile_view, name='profile'),
     path('create/', views.CreateServiceView.as_view(), name='create_service'),
     path('update/<int:pk>', views.UpdateServiceView.as_view(), name='update_service'),

@@ -31,8 +31,6 @@ class InsuranceServiceDocument(Document):
     class Django:
         model = InsuranceService
         fields = [
-            'minimal_payment',
-            'term',
             'description'
         ]
 
@@ -40,7 +38,7 @@ class InsuranceServiceDocument(Document):
 
     def get_queryset(self):
         return super(InsuranceServiceDocument, self).get_queryset().select_related(
-            'company'
+            "company"
         )
 
     def get_instances_from_related(self, related_instance):

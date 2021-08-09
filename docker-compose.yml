@@ -5,8 +5,8 @@ services:
     build: ./
     # command: >
     #   sh -c "python manage.py migrate"
-    volumes:
-      - ./:/usr/src/app/
+    # volumes:
+    #   - ./:/usr/src/app/
     ports:
       - "8000:8000"
     image: web-image

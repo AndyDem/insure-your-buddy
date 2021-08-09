@@ -35,16 +35,9 @@ def main_view(request):
     View для отображения главной страницы с фильтруемыми страховыми услугами
 
     """
-    services = get_sorted_services(request)
+    services = InsuranceService.objects.all()
+    services = get_sorted_services(request, services)
     services = get_filtered_services(request, services)
-
-    s = InsuranceServiceDocument.search()
-    s = s.filter('match_phrase', service_title='insurance-company 2')
-    s = s.to_queryset()
-    for hit in s:
-        print(
-            f"{type(hit)}{hit}"
-        )
 
     if request.method == 'POST':
         form = SearchForm(request.POST)

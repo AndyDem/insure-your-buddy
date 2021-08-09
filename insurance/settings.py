@@ -137,7 +137,7 @@ AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'insure_your_buddy:profile'
 LOGOUT_REDIRECT_URL = 'insure_your_buddy:main'
-CELERY_BROKER_URL = 'amqp://localhost:5672'
+CELERY_BROKER_URL = 'amqp://localhost'
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = "Your SendGrid API Key"
 # Toggle sandbox mode (when running in DEBUG mode)

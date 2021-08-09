@@ -2,6 +2,7 @@ from .models import InsuranceService, Customer
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from insure_your_buddy.documents import InsuranceServiceDocument
+from elasticsearch_dsl import Q
 
 
 def create_response(customer_data, service_id):
@@ -41,7 +42,7 @@ def create_service(service_data, user_id):
     )
 
 
-def get_sorted_services(request, **kwargs):
+def get_sorted_services(request, services, **kwargs):
     """
 
     Функция сортировки
@@ -51,7 +52,6 @@ def get_sorted_services(request, **kwargs):
     if 'order_by' not in request.session:
         request.session['order_by'] = ''
     order_from_session = request.session['order_by']
-    services = InsuranceService.objects.all()
     if 'company' in kwargs:
         services = services.filter(company=kwargs['company'])
     if order_by:
@@ -153,13 +153,19 @@ def get_paginated_objects(request, objects):
     objects = paginator.get_page(page_number)
     return objects
 
+
 def search_service(form):
     """
-    
+
     Функция поиска
-    
+
     """
     search = InsuranceServiceDocument.search()
-    search_data = form.cleaned_data
-    search_result = search.filter('match_phrase', service_title=search_data['search'])
+    search_data = form.cleaned_data['search']
+    query = Q(
+        'fuzzy', category=search_data) | Q(
+            'fuzzy', company__company_name=search_data) | Q(
+                'fuzzy', description=search_data) | Q(
+                    'fuzzy', service_title=search_data)
+    search_result = search.query(query)
     return search_result.to_queryset()

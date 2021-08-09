@@ -40,7 +40,7 @@ class InsuranceService(models.Model):
             with minimal payment of { self.minimal_payment }$ \
                 for { self.term } {term}.'
         company_name = self.company.company_name
-        return title, company_name
+        return title
 
 class Customer(models.Model):
     """
