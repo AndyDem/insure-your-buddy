@@ -1,37 +1,57 @@
 <div class="col">
     {% if services %}
-    <table id="services-table" class="table">
+    <table id="services-table" class="table table-hover">
         <thead>
             <tr>
-                <th class="text-center"><a style="color: black;" href="?sort_by=category">Category</a></th>
-                <th class="text-center"><a style="color: black;" href="?sort_by=minimal_payment">Minimal payment($)</a></th>
-                <th class="text-center"><a style="color: black;" href="?sort_by=term">Term(months)</a></th>
-                <th class="text-center"><a style="color: black;" href="?sort_by=company">Company</a></th>
-                <th class="text-center">Description</th>
+                <th class="text-center">
+                    <a style="color: black;" href="?sort_by=category">Category</a>
+                </th>
+                <th class="text-center">
+                    <a style="color: black;" href="?sort_by=minimal_payment">Minimal payment($)</a>
+                </th>
+                <th class="text-center">
+                    <a style="color: black;" href="?sort_by=term">Term(months)</a>
+                </th>
+                <th class="text-center">
+                    <a style="color: black;" href="?sort_by=company">Company</a>
+                </th>
                 {% if user.is_anonymous %}
                 <th class="text-center">Submit your application</th>
                 {% elif request.path == '/insure-your-buddy/profile/' %}
+                <th class="text-center">
+                    <a style="color: black;" href="?sort_by=-customers_count">Customer responses</a>
+                </th>
                 <th class="text-center">Update/Delete service</th>
-                <th class="text-center"><a style="color: black;" href="?sort_by=-customers_count">Customer responses</a></th>
+
                 {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for service in services %}
             <tr valign="middle">
-                <td class="text-center"> {{ service.get_category_display }}</td>
-                <td class="text-center"> {{ service.minimal_payment }}</td>
-                <td class="text-center"> {{ service.term }}</td>
-                <td class="text-center"> {{ service.company.company_name }}</td>
-                <td class="text-center"> {{ service.description }}</td>
+                <td class="text-center service" data-form-url="{% url 'insure_your_buddy:detail' service.pk %}">
+                    {{ service.get_category_display }}
+                </td>
+                <td class="text-center service" data-form-url="{% url 'insure_your_buddy:detail' service.pk %}">
+                    {{ service.minimal_payment }}
+                </td>
+                <td class="text-center service" data-form-url="{% url 'insure_your_buddy:detail' service.pk %}">
+                    {{ service.term }}
+                </td>
+                <td class="text-center service" data-form-url="{% url 'insure_your_buddy:detail' service.pk %}">
+                    {{ service.company.company_name }}
+                </td>
                 {% if user.is_anonymous %}
                 <td class="text-center">
                     <button type="button" class="response btn btn-sm btn-primary"
-                        data-form-url="{% url 'insure_your_buddy:response' service.id %}">
+                        data-form-url="{% url 'insure_your_buddy:response' service.pk %}">
                         <span class="fa fa-file-text-o"></span>
                     </button>
                 </td>
                 {% elif user.id == service.company.id and request.path == '/insure-your-buddy/profile/' %}
+                <td class="text-center service" data-form-url="{% url 'insure_your_buddy:detail' service.pk %}">
+                    {{ service.customers_count }} responses
+                </td>
                 <td class="text-center">
                     <button type="button" class="update-service btn btn-sm btn-primary"
                         data-form-url="{% url 'insure_your_buddy:update_service' service.pk %}">
@@ -42,14 +62,6 @@
                         <span class="fa fa-trash"></span>
                     </button>
                 </td>
-                <td class="text-center">
-                    {{ service.customers_count }} responses
-                    <a type="button" class="show-responses btn btn-sm btn-primary"
-                        href="{% url 'insure_your_buddy:show_responses' service.pk %}">
-                        <span class="fa fa-search"></span>
-                    </a>
-                </td>
-
                 {% endif %}
             </tr>
             {% endfor %}

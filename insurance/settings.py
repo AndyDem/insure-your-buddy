@@ -21,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = 'django-insecure-c_j48b0q6mjo%*wo2^9yz*zcgi5&v4bn(up_d$e7zp!7dpj!n7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(os.environ.get("DEBUG", default=1))
+DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -37,8 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'insure_your_buddy',
     'users',
+    'insure_your_buddy',
     'widget_tweaks',
     'bootstrap_modal_forms',
     'django_elasticsearch_dsl'
@@ -80,11 +80,11 @@ WSGI_APPLICATION = 'insurance.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
-        "USER": os.environ.get("SQL_USER", "user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.postgresql"),
+        "NAME": os.environ.get("SQL_DATABASE", "insure_your_buddy"),
+        "USER": os.environ.get("SQL_USER", "iyb_user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "iyb_pass"),
+        "HOST": os.environ.get("SQL_HOST", "127.0.0.1"),
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
@@ -147,3 +147,6 @@ ELASTICSEARCH_DSL = {
         'hosts': 'localhost:9200'
     },
 }
+MONGO_INITDB_DATABASE='service_views_and_responses'
+MONGO_INITDB_USERNAME='iyb_user'
+MONGO_INITDB_PASSWORD='iyb_pass'

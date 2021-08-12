@@ -2,11 +2,10 @@ version: "3.7"
 
 services:
   web:
-    build: ./
-    # command: >
-    #   sh -c "python manage.py migrate"
-    # volumes:
-    #   - ./:/usr/src/app/
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+              python manage.py runserver localhost:8000"
     ports:
       - "8000:8000"
     image: web-image
@@ -14,7 +13,6 @@ services:
       - ./.env.dev
     depends_on: 
       - db
-      # - rabbitmq
 
   db:
     image: postgres:10.17-alpine
@@ -27,29 +25,47 @@ services:
     ports:
       - "5432:5432"
 
-  # rabbitmq:
-  #   image: rabbitmq:3-management
-  #   hostname: some-rabbit
-  #   ports: 
-  #     - "5762:5762"
-  #     - "15672:15672"
-  #   restart: on-failure
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: 
+      - "5672:5672"
+      - "15672:15672"
+    restart: on-failure
 
   # celery_worker:
   #   command: celery -A insurance worker -l  info -P solo
   #   depends_on: 
   #     - web
-  #     - db
+  #     # - db
   #     - rabbitmq
   #   image: web-image
 
-  # elasticsearch:
-  #   image: elasticsearch:7.13.4
-  #   environment:
-  #     - discovery.type=single-node
-  #   hostname: elasticsearch
-  #   ports:
-  #     - "9200:9200"
+  elasticsearch:
+    image: elasticsearch:7.13.4
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: iyb_user
+      MONGO_INITDB_ROOT_PASSWORD: iyb_pass
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: iyb_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: iyb_pass
+      ME_CONFIG_MONGODB_URL: mongodb://iyb_user:iyb_pass@mongo:27017/
+
   
 volumes:
   postgres_data:

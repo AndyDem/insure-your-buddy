@@ -8,3 +8,6 @@ class User(AbstractUser):
     
     """
     company_name = models.CharField(max_length=300)
+
+    def __str__(self):
+        return self.company_name

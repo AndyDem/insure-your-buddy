@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from insure_your_buddy.documents import InsuranceServiceDocument
 from elasticsearch_dsl import Q
+from django.db.models import F
+from insurance.utils import get_mongo_client
 
 
 def create_response(customer_data, service_id):
@@ -19,11 +21,11 @@ def create_response(customer_data, service_id):
         phone_number=customer_data['phone_number'],
         email=customer_data['email']
     )
-    service = InsuranceService.objects.get(pk=service_id)
+    update_response_counter(service_id)
+    service = InsuranceService.objects.filter(pk=service_id)
     if service not in customer.desired_service.all():
         customer.desired_service.add(service_id)
-        service.customers_count += 1
-        service.save()
+        service.update(customers_count=F('customers_count') + 1)
 
 
 def create_service(service_data, user_id):
@@ -33,21 +35,33 @@ def create_service(service_data, user_id):
 
     """
     company = get_user_model().objects.get(pk=user_id)
-    InsuranceService.objects.create(
+    new_service = InsuranceService(
         category=service_data['category'],
         minimal_payment=service_data['minimal_payment'],
         term=service_data['term'],
         company=company,
         description=service_data['description']
     )
+    new_service.save()
+
+    db = get_mongo_client()
+    service_collection = db['service']
+    service = {
+        'service_id': new_service.id,
+        'view_counter': 0,
+        'response_counter': 0
+    }
+    service_collection.insert_one(service)
 
 
-def get_sorted_services(request, services, **kwargs):
+
+def get_sorted_services(request, **kwargs):
     """
 
     Функция сортировки
 
     """
+    services = InsuranceService.objects.all()
     order_by = request.GET.get('sort_by')
     if 'order_by' not in request.session:
         request.session['order_by'] = ''
@@ -162,10 +176,28 @@ def search_service(form):
     """
     search = InsuranceServiceDocument.search()
     search_data = form.cleaned_data['search']
-    query = Q(
-        'fuzzy', category=search_data) | Q(
-            'fuzzy', company__company_name=search_data) | Q(
-                'fuzzy', description=search_data) | Q(
-                    'fuzzy', service_title=search_data)
+    category_q = Q('fuzzy', category=search_data)
+    company_q = Q('fuzzy', company__company_name=search_data)
+    description_q = Q('fuzzy', description=search_data)
+    service_title_q = Q('fuzzy', service_title=search_data)
+    query = category_q | company_q | description_q | service_title_q
     search_result = search.query(query)
     return search_result.to_queryset()
+
+def update_response_counter(service_id):
+    db = get_mongo_client()
+    service_collection = db['service']
+
+    service_collection.update_one(
+        {'service_id': service_id},
+        {'$inc': {'response_counter': 1}}
+    )
+
+def update_view_counter(service_id):
+    db = get_mongo_client()
+    service_collection = db['service']
+
+    service_collection.update_one(
+        {'service_id': service_id},
+        {'$inc': {'view_counter': 1}}
+    )

@@ -1,0 +1,40 @@
+{% load widget_tweaks %}
+
+<div class="modal-header">
+  <h3 class="modal-title">Service details</h3>
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+
+<div class="modal-body">
+
+  <div class="">
+    <h4>{{ service.get_service_title }}</h4>
+  </div>
+  <div class="">
+    Company:
+    {{ service.company }}
+  </div>
+  <div class="">
+    Description:
+    {{ service.description }}
+  </div>
+
+</div>
+
+{% if user.id == service.company.id and customers %}
+<div class="container mt-3">
+    <div class="row">
+        <div class="col">
+            <h4>{{ title }}</h4>
+            <b style="color: gray;">List of customers</b>
+            {% include "insure_your_buddy/customer_responses_table.html" %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+</div>

@@ -100,11 +100,21 @@
             };
             deleteServiceModalForm();
 
+            function detailServiceModalForm() {
+                $(".service").each(function () {
+                    $(this).modalForm({
+                        formURL: $(this).data("form-url")
+                    });
+                });
+            };
+            detailServiceModalForm();
+
             function reinstantiateModalForms() {
                 createServiceModalForm();
                 updateServiceModalForm();
                 deleteServiceModalForm();
                 responseModalForm();
+                detailServiceModalForm();
             };
 
             $(".alert").fadeTo(2000, 500).slideUp(500, function () {

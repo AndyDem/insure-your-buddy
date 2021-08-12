@@ -4,18 +4,22 @@
 
 <div class="container mt-3">
     <div class="row">
-        <div class="col">
-            <div class="mb-3">
-                <button id="create-service" class="btn btn-primary mr-2" type="button" name="button">
-                    <span class="fa fa-plus mr-2"></span>Create service
-                </button>
-                <button id="filter" class="btn btn-primary mr-2" type="button"
-                    data-form-url="{% url 'insure_your_buddy:filter' %}">
-                    <span class="fa fa-filter mr-2"></span>Filter
-                </button>
+        {% if user.is_anonymous %}
+            <h3>Please, log in to see your profile page</h3>
+        {% else %}
+            <div class="col">
+                <div class="mb-3">
+                    <button id="create-service" class="btn btn-primary mr-2" type="button" name="button">
+                        <span class="fa fa-plus mr-2"></span>Create service
+                    </button>
+                    <button id="filter" class="btn btn-primary mr-2" type="button"
+                        data-form-url="{% url 'insure_your_buddy:filter' %}">
+                        <span class="fa fa-filter mr-2"></span>Filter
+                    </button>
+                </div>
+                {% include "insure_your_buddy/services_table.html" %}
             </div>
-            {% include "insure_your_buddy/services_table.html" %}
-        </div>
+        {% endif %}
     </div>
 </div>
 

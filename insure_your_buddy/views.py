@@ -1,6 +1,7 @@
-from insure_your_buddy.documents import InsuranceServiceDocument
 from django.shortcuts import redirect, render
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
+from django.views import generic
 from .services import (
     create_response,
     create_service,
@@ -8,7 +9,8 @@ from .services import (
     get_paginated_objects,
     get_sorted_services,
     filters_to_session,
-    search_service
+    search_service,
+    update_view_counter
 )
 from .tasks import send_customer_data
 from .forms import (
@@ -25,7 +27,8 @@ from bootstrap_modal_forms.generic import (
     BSModalCreateView,
     BSModalUpdateView,
     BSModalDeleteView,
-    BSModalFormView
+    BSModalFormView,
+    BSModalReadView
 )
 
 
@@ -35,8 +38,7 @@ def main_view(request):
     View для отображения главной страницы с фильтруемыми страховыми услугами
 
     """
-    services = InsuranceService.objects.all()
-    services = get_sorted_services(request, services)
+    services = get_sorted_services(request)
     services = get_filtered_services(request, services)
 
     if request.method == 'POST':
@@ -54,44 +56,49 @@ def main_view(request):
     return render(request, 'insure_your_buddy/main.html', context)
 
 
-def profile_view(request):
+class ProfileView(generic.TemplateView):
     """
 
     View личного кабинета с фильтруемыми
     страховыми услугами конкретной компании
 
     """
-    if request.user.is_anonymous:
-        return redirect('insure_your_buddy:main')
+    template_name = 'insure_your_buddy/profile.html'
 
-    services = get_sorted_services(request, company=request.user.id)
-    services = get_filtered_services(request, services)
-    services = get_paginated_objects(request, services)
+    def get_context_data(self, **kwargs):
+        services = get_sorted_services(
+            request=self.request,
+            company=self.request.user.id
+        )
+        services = get_filtered_services(self.request, services)
+        services = get_paginated_objects(self.request, services)
 
-    context = {'services': services}
+        context = {'services': services}
+        return context
 
-    return render(request, 'insure_your_buddy/profile.html', context)
 
-
-def show_responses_view(request, service_id):
+class ServiceDetailView(BSModalReadView):
     """
 
-    View для отображения откликов(заявок) на конкретную услугу
+    View страницы услуги
 
     """
-    customers = Customer.objects.filter(desired_service__id=service_id)
-    customers = customers.order_by('-id')
-    customers = get_paginated_objects(request, customers)
 
-    title, company = InsuranceService.objects.get(
-        pk=service_id).get_service_title()
-    print(company)
-    context = {
-        'title': title,
-        'customers': customers
-    }
+    model = InsuranceService
+    template_name = 'insure_your_buddy/detail.html'
 
-    return render(request, 'insure_your_buddy/show_responses.html', context)
+    def get_context_data(self, **kwargs):
+        service_id = self.kwargs['pk']
+        customers = Customer.objects.filter(desired_service__id=service_id)
+        customers = customers.order_by('-id')
+        customers = get_paginated_objects(self.request, customers)
+        context = {
+            'customers': customers,
+            'service': super().get_object()
+        }
+        if self.request.user.is_anonymous:
+            update_view_counter(service_id)
+        return context
 
 
 class FilterServiceView(BSModalFormView):
