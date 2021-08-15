@@ -137,16 +137,19 @@ AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'insure_your_buddy:profile'
 LOGOUT_REDIRECT_URL = 'insure_your_buddy:main'
-CELERY_BROKER_URL = 'amqp://localhost'
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = "Your SendGrid API Key"
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", 'amqp://localhost')
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "sendgrid_backend.SendgridBackend")
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "Your SendGrid API Key")
 # Toggle sandbox mode (when running in DEBUG mode)
 SENDGRID_SANDBOX_MODE_IN_DEBUG = True
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': 'localhost:9200'
+        'hosts': os.environ.get("ELASTICSEARCH_DSL", "localhost")
     },
 }
-MONGO_INITDB_DATABASE='service_views_and_responses'
-MONGO_INITDB_USERNAME='iyb_user'
-MONGO_INITDB_PASSWORD='iyb_pass'
+MONGO_INITDB_DATABASE = os.environ.get(
+    "MONGO_INITDB_DATABASE", "service_views_and_responses")
+MONGO_INITDB_USERNAME = os.environ.get("MONGO_INITDB_USERNAME", "iyb_user")
+MONGO_INITDB_PASSWORD = os.environ.get("MONGO_INITDB_PASSWORD", "iyb_pass")
+MONGO_HOST = os.environ.get("MONGO_HOST", "localhost")

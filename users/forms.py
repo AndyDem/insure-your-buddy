@@ -5,9 +5,9 @@ from bootstrap_modal_forms.mixins import PopRequestMixin, CreateUpdateAjaxMixin
 
 class CustomUserCreationForm(PopRequestMixin, CreateUpdateAjaxMixin, UserCreationForm):
     """
-    
+
     Форма для регистрации пользователя (компании)
-    
+
     """
     class Meta:
         model = get_user_model()
@@ -20,8 +20,8 @@ class CustomUserCreationForm(PopRequestMixin, CreateUpdateAjaxMixin, UserCreatio
 
 class CustomAuthenticationForm(PopRequestMixin, CreateUpdateAjaxMixin, AuthenticationForm):
     """
-    
+
     Форма для аутентификации пользователя (компании)
-    
+
     """
     pass

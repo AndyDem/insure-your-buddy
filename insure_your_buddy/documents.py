@@ -1,5 +1,3 @@
-from django.db import models
-from django.db.models.fields import related
 from django_elasticsearch_dsl import (
     Document,
     fields,

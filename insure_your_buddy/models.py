@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from insurance.utils import get_mongo_client
 
 
 class InsuranceService(models.Model):
     """
-    
+
     Модель страховой услуги
-    
+
     """
     VEHICLE = 1
     HOME = 2
@@ -26,8 +27,6 @@ class InsuranceService(models.Model):
     term = models.PositiveIntegerField()
     company = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     description = models.TextField()
-    customers_count = models.PositiveIntegerField(default=0)
-
 
     def get_service_title(self):
         """
@@ -39,14 +38,28 @@ class InsuranceService(models.Model):
         title = f'{ self.get_category_display() } insurance\
             with minimal payment of { self.minimal_payment }$ \
                 for { self.term } {term}.'
-        company_name = self.company.company_name
         return title
+
+    def get_views_counter(self):
+        db = get_mongo_client()
+        service_collection = db['service']
+        service = service_collection.find_one({'service_id': self.id})
+        view_counter = service['view_counter']
+        return view_counter
+
+    def get_response_counter(self):
+        db = get_mongo_client()
+        service_collection = db['service']
+        service = service_collection.find_one({'service_id': self.id})
+        response_counter = service['response_counter']
+        return response_counter
+
 
 class Customer(models.Model):
     """
-    
+
     Модель отклика потребителя
-    
+
     """
     full_name = models.CharField(max_length=300)
     phone_number = models.CharField(max_length=20)

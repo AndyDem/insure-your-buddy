@@ -2,7 +2,8 @@ from pymongo import MongoClient
 from insurance.settings import (
     MONGO_INITDB_DATABASE,
     MONGO_INITDB_USERNAME,
-    MONGO_INITDB_PASSWORD
+    MONGO_INITDB_PASSWORD,
+    MONGO_HOST
 )
 
 
@@ -11,12 +12,11 @@ def get_mongo_client():
     username = MONGO_INITDB_USERNAME
     password = MONGO_INITDB_PASSWORD
     client = MongoClient(
-        host='127.0.0.1',
+        host=MONGO_HOST,
         port=27017,
         serverSelectionTimeoutMS=3000,
         username=username,
         password=password
     )
     db = client[db_name]
-    print('success')
     return db

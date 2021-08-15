@@ -5,7 +5,9 @@ services:
     build: .
     command: >
       sh -c "python manage.py migrate &&
-              python manage.py runserver localhost:8000"
+              python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/app
     ports:
       - "8000:8000"
     image: web-image
@@ -32,13 +34,17 @@ services:
       - "15672:15672"
     restart: on-failure
 
-  # celery_worker:
-  #   command: celery -A insurance worker -l  info -P solo
-  #   depends_on: 
-  #     - web
-  #     # - db
-  #     - rabbitmq
-  #   image: web-image
+  celery_worker:
+    build: .
+    command: celery -A insurance worker -B 
+    links: 
+      - rabbitmq
+    env_file: 
+      - ./.env.dev
+    depends_on: 
+      - web
+      - rabbitmq
+    image: web-image
 
   elasticsearch:
     image: elasticsearch:7.13.4
@@ -50,6 +56,8 @@ services:
   mongo:
     image: mongo
     restart: always
+    volumes: 
+      - mongo:/data/mongo
     ports:
       - "27017:27017"
     environment:
@@ -69,3 +77,4 @@ services:
   
 volumes:
   postgres_data:
+  mongo:

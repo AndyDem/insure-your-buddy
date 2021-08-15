@@ -42,7 +42,7 @@ class ServiceFilterForm(BSModalForm):
 
     """
     NO_FILTER = ((0, 'All'),)
-    
+
     CATEGORIES = NO_FILTER + InsuranceService.CATEGORIES
     MINIMAL_PAYMENTS = NO_FILTER + (
         ('0 100', '< 100$'),
@@ -54,14 +54,18 @@ class ServiceFilterForm(BSModalForm):
         ('6 12', '6 to 12 months'),
         ('12 1000', '> 12 months')
     )
-    COMPANIES = NO_FILTER + tuple(
-        (user.id, user.company_name) for user in
-        get_user_model().objects.filter(is_superuser=False)
-    )
+
+    def __init__(self, *args, **kwargs):
+        super(ServiceFilterForm, self).__init__(*args, **kwargs)
+        self.fields['company'].choices = self.NO_FILTER + tuple(
+            (user.id, user.company_name) for user in
+            get_user_model().objects.filter(is_superuser=False)
+        )
+
     category = forms.ChoiceField(choices=CATEGORIES)
     minimal_payment = forms.ChoiceField(choices=MINIMAL_PAYMENTS)
     term = forms.ChoiceField(choices=TERMS)
-    company = forms.ChoiceField(choices=COMPANIES)
+    company = forms.ChoiceField()
 
 
 class SearchForm(BSModalForm):

@@ -1,13 +1,18 @@
+from insure_your_buddy.forms import ServiceFilterForm
+from typing import Any, Dict
+from django.db.models.query import QuerySet
+from django.contrib.sessions.backends.db import SessionStore
+from django.http.request import QueryDict
 from .models import InsuranceService, Customer
 from django.contrib.auth import get_user_model
-from django.core.paginator import Paginator
+from django.core.paginator import Page, Paginator
 from insure_your_buddy.documents import InsuranceServiceDocument
 from elasticsearch_dsl import Q
 from django.db.models import F
 from insurance.utils import get_mongo_client
 
 
-def create_response(customer_data, service_id):
+def create_response(customer_data: Dict[str, Any], service_id: int) -> None:
     """
 
     Функция для создания объекта отклика или
@@ -22,13 +27,14 @@ def create_response(customer_data, service_id):
         email=customer_data['email']
     )
     update_response_counter(service_id)
-    service = InsuranceService.objects.filter(pk=service_id)
-    if service not in customer.desired_service.all():
+    desired_services_ids = [
+        service.id for service in customer.desired_service.all()
+    ]
+    if service_id not in desired_services_ids:
         customer.desired_service.add(service_id)
-        service.update(customers_count=F('customers_count') + 1)
 
 
-def create_service(service_data, user_id):
+def create_service(service_data: Dict[str, Any], user_id: int) -> None:
     """
 
     Функция для создания объекта страховой услуги
@@ -54,46 +60,44 @@ def create_service(service_data, user_id):
     service_collection.insert_one(service)
 
 
-
-def get_sorted_services(request, **kwargs):
+def get_sorted_services(request_GET: QueryDict, session: SessionStore, services: QuerySet, **kwargs: Any) -> QuerySet:
     """
 
     Функция сортировки
 
     """
-    services = InsuranceService.objects.all()
-    order_by = request.GET.get('sort_by')
-    if 'order_by' not in request.session:
-        request.session['order_by'] = ''
-    order_from_session = request.session['order_by']
+    order_by = request_GET.get('sort_by')
+    if 'order_by' not in session:
+        session['order_by'] = ''
+    order_from_session = session['order_by']
     if 'company' in kwargs:
         services = services.filter(company=kwargs['company'])
     if order_by:
         if order_by == order_from_session:
-            request.session['order_by'] = ''
+            session['order_by'] = ''
             return services.order_by(order_by).reverse()
-        request.session['order_by'] = order_by
+        session['order_by'] = order_by
         return services.order_by(order_by)
     else:
         return services.order_by('-id')
 
 
-def filters_to_session(request, form):
+def filters_to_session(session: SessionStore, form: ServiceFilterForm) -> None:
     """
 
     Функция записи параметров фильтрации в сессию
 
     """
-    if 'filters' not in request.session:
-        request.session['filters'] = {}
-    filters = request.session['filters']
+    if 'filters' not in session:
+        session['filters'] = {}
+    filters = session['filters']
     filter_data = form.cleaned_data
     for key, value in filter_data.items():
         filters[key] = value
-    request.session['filter'] = filters
+    session['filter'] = filters
 
 
-def category_filter(filters, services):
+def category_filter(filters: Dict[str, str], services: QuerySet) -> QuerySet:
     """
 
     Фильтр по категории
@@ -104,7 +108,7 @@ def category_filter(filters, services):
     return services
 
 
-def minimal_payment_filter(filters, services):
+def minimal_payment_filter(filters: Dict[str, str], services: QuerySet) -> QuerySet:
     """
 
     Фильтр по минимальной стоимости
@@ -117,7 +121,7 @@ def minimal_payment_filter(filters, services):
     return services
 
 
-def term_filter(filters, services):
+def term_filter(filters: Dict[str, str], services: QuerySet) -> QuerySet:
     """
 
     Фильтр по сроку страхования
@@ -130,7 +134,7 @@ def term_filter(filters, services):
     return services
 
 
-def company_filter(filters, services):
+def company_filter(filters: Dict[str, str], services: QuerySet) -> QuerySet:
     """
 
     Фильтр по компании
@@ -141,14 +145,14 @@ def company_filter(filters, services):
     return services
 
 
-def get_filtered_services(request, services):
+def get_filtered_services(session: SessionStore, services: QuerySet) -> QuerySet:
     """
 
     Функция для применения всех фильтров
 
     """
-    if 'filters' in request.session:
-        filters = request.session['filters']
+    if 'filters' in session:
+        filters = session['filters']
         services = category_filter(filters, services)
         services = minimal_payment_filter(filters, services)
         services = term_filter(filters, services)
@@ -156,26 +160,25 @@ def get_filtered_services(request, services):
     return services
 
 
-def get_paginated_objects(request, objects):
+def get_paginated_objects(request_GET: QueryDict, objects: QuerySet) -> Page:
     """
 
     Функция для пагинации
 
     """
     paginator = Paginator(objects, 5)
-    page_number = request.GET.get('p')
+    page_number = request_GET.get('p')
     objects = paginator.get_page(page_number)
     return objects
 
 
-def search_service(form):
+def search_service(search_data: str) -> QuerySet:
     """
 
     Функция поиска
 
     """
     search = InsuranceServiceDocument.search()
-    search_data = form.cleaned_data['search']
     category_q = Q('fuzzy', category=search_data)
     company_q = Q('fuzzy', company__company_name=search_data)
     description_q = Q('fuzzy', description=search_data)
@@ -184,7 +187,8 @@ def search_service(form):
     search_result = search.query(query)
     return search_result.to_queryset()
 
-def update_response_counter(service_id):
+
+def update_response_counter(service_id: int) -> None:
     db = get_mongo_client()
     service_collection = db['service']
 
@@ -193,7 +197,8 @@ def update_response_counter(service_id):
         {'$inc': {'response_counter': 1}}
     )
 
-def update_view_counter(service_id):
+
+def update_view_counter(service_id: int) -> None:
     db = get_mongo_client()
     service_collection = db['service']
 
