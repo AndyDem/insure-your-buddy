@@ -69,7 +69,6 @@ class SearchResultsView(MainView):
     View для отображения результатов поиска
 
     """
-    template_name = 'insure_your_buddy/search_results.html'
 
     def get_context_data(self, **kwargs) -> Dict[str, Any]:
         request_GET = self.request.GET
